@@ -1,23 +1,34 @@
 import { LogSeverityLevel } from "./enum/log-severity-level";
 
-
+export interface LogEntityOptions {
+    message: string,
+    level: LogSeverityLevel,
+    orgin: string
+    createAt?: Date;
+}
 export class LogModel {
 
     public level: LogSeverityLevel;
     public message: string;
     public createAt: Date;
+    public origin: string;
 
-    constructor(message: string, level: LogSeverityLevel){
-        this.message = message;
-        this.level = level;
+    constructor(options: LogEntityOptions){
+        this.message = options.message;
+        this.level = options.level;
         this.createAt = new Date();
+        this.origin = options.orgin;
     }
 
     static fromJson = (jsonData: string):LogModel=>{
-       const {message, level, createAt} = JSON.parse(jsonData);
+       const {message, level, createAt, origin} = JSON.parse(jsonData);
        
-       const log = new LogModel(message, level);
-       log.createAt = new Date(createAt);
+       const log = new LogModel({
+        message: message,
+        level: level,
+        createAt: createAt,
+        orgin: origin
+       });
        return log;
     } 
 };
