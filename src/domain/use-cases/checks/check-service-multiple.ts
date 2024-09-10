@@ -4,20 +4,27 @@ import { LogRepository } from '../../repository/log.repository';
 
 
 
-interface CheckServiceUseCase{
+interface CheckServiceMultipleUseCase{
     execute(url: string): Promise<boolean>;
 }
 
 type SuccessCallback = () => void;
 type ErrorCallback = (error: string) => void;
 
-export class CheckService implements CheckServiceUseCase {
+export class CheckServiceMultiple implements CheckServiceMultipleUseCase {
 
     constructor(
-        private readonly logRepository: LogRepository,
+        private readonly logRepository: LogRepository[],
         private readonly successCallback: SuccessCallback,
         private readonly errorCallback: ErrorCallback
     ){}
+
+    private callLogs (log: LogModel){
+        this.logRepository.forEach(logRepository =>{
+            logRepository.saveLogs(log);
+        });
+    };
+    
 
     public async execute(url: string): Promise<boolean> {
 
@@ -32,7 +39,7 @@ export class CheckService implements CheckServiceUseCase {
                 level: LogSeverityLevel.low, 
                 origin: 'check-service.ts'
             })
-            this.logRepository.saveLogs(log);
+            this.callLogs(log);
             this.successCallback();
             return true;
         } catch (error) {
@@ -42,7 +49,7 @@ export class CheckService implements CheckServiceUseCase {
                 level: LogSeverityLevel.high,
                 origin: 'check-service.ts'
             });
-            this.logRepository.saveLogs(log);
+            this.callLogs(log);
             this.errorCallback(`${errorMessage}`);
             return false;
         }

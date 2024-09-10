@@ -4,9 +4,14 @@ import { LogRepositoryImpl } from "../infrastructure/repositories/log.repository
 import { FileSystemDataSource } from "../infrastructure/Datasource/file-system.datasource";
 import { EmailService } from './email/email.service';
 import { sendEmailLogs } from "../domain/use-cases/email/send-email-logs";
+import { MongoLogDataSource } from "../infrastructure/Datasource/mongo-log.datasource";
+import { PostgreLogDatasource } from "../infrastructure/Datasource/postgre-log.datasource";
+import { CheckServiceMultiple } from "../domain/use-cases/checks/check-service-multiple";
 
+const fsLogRepository = new LogRepositoryImpl(new FileSystemDataSource());
+const PostgreRepository = new LogRepositoryImpl(new PostgreLogDatasource());
+const mongoRepository = new LogRepositoryImpl(new MongoLogDataSource());
 
-const fileSystemLogRepository = new LogRepositoryImpl(new FileSystemDataSource());
 const emailService = new EmailService();
 
 export class Server {
@@ -16,12 +21,12 @@ export class Server {
 
         //new sendEmailLogs(emailService, fileSystemLogRepository).execute(['correo@prueba.com'])
        
-        CronService.CreateJob(
-            '* * * * * *',
+       CronService.CreateJob(
+            '*/20 * * * * *',
             () => {
-                const url = 'https://google.com';
-                new CheckService(
-                    fileSystemLogRepository,
+                const url = 'https://google.cowerqwerqm';
+                new CheckServiceMultiple(
+                    [fsLogRepository, PostgreRepository, mongoRepository],
                     () => console.log(`${url} is OK`),
                     (error) => console.log(error)
                 ).execute(`${url}`)
